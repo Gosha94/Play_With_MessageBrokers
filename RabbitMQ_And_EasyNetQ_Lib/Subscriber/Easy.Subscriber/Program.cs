@@ -17,23 +17,25 @@ namespace Easy.Subscriber
             Host.CreateDefaultBuilder(args)
                 .UseServiceProviderFactory(new AutofacServiceProviderFactory())
                 .ConfigureContainer<ContainerBuilder>(ConfigureContainer)
-                .ConfigureServices(services => services.Configure<ConsoleLifetimeOptions>(options => options.SuppressStatusMessages = true))
+                .ConfigureServices(services =>
+                    services.Configure<ConsoleLifetimeOptions>(options => options.SuppressStatusMessages = true))
                 .ConfigureServices((hostContext, services) =>
                 {
                     services.AddHostedService<ProcessStarterService>();
+
+                    services.AddSingleton<IBus>(
+                        RabbitHutch.CreateBus(
+                            "username=super_rabbit;" +
+                            "password=super_rabbit;" +
+                            "virtualHost=xo_game;" +
+                            "host=localhost;" +
+                            "publisherConfirms=true;" +
+                            "timeout=10"));
                 });
 
         private static void ConfigureContainer(HostBuilderContext hostContext, ContainerBuilder builder)
         {
             var assembly = Assembly.GetExecutingAssembly();
-
-            builder.Register<IBus>((context) =>
-                RabbitHutch.CreateBus(
-                    "username=super_rabbit;" +
-                    "password=super_rabbit;" +
-                    "virtualHost=xo_game;" +
-                    "host=localhost"))
-                .SingleInstance();
 
             //builder
             //    .RegisterType<ClientRegistrationBehaviourProcess>()

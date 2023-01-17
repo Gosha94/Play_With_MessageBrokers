@@ -1,4 +1,5 @@
 ﻿using EasyNetQ;
+using Shared.Contracts;
 
 namespace Easy.Subscriber
 {
@@ -12,9 +13,15 @@ namespace Easy.Subscriber
             _messageBus = messageBus;
         }
 
-        public Task StartAsync(CancellationToken cancellationToken)
+        public Task StartAsync(CancellationToken cancellationToken) =>
+            _messageBus.PubSub.SubscribeAsync<MessageDto>("subscribe_async_test",
+                message => SomeWork()
+                    .ContinueWith(task =>
+                        Console.WriteLine($"Received MessageDto with text: {message.Text}"), cancellationToken));
+
+        private async Task SomeWork()
         {
-            
+            await Task.Delay(2000);
         }
 
         public Task StopAsync(CancellationToken cancellationToken)
